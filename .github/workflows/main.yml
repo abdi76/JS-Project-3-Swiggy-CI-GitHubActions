@@ -41,13 +41,13 @@ jobs:
     - name: 🔐 Prepare SSH Access to EC2
       run: |
         mkdir -p ~/.ssh
-        echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/id_rsa
+        echo "${{ secrets.EC2_SSH_KEY }}" | tr -d '\r' > ~/.ssh/id_rsa
         chmod 600 ~/.ssh/id_rsa
         ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
 
     - name: 🚀 Deploy to EC2 via SSH
       run: |
-        ssh ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
+        ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
           echo "📦 Pulling latest Docker image..."
           docker rm -f swiggy-app || true
           docker pull ${{ secrets.DOCKERHUB_USER }}/swiggy-app:latest
